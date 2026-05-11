@@ -1,0 +1,1502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Regex Cheatsheet — A Field Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📜</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,300..900,0..100,0..1;1,9..144,300..900,0..100,0..1&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #f1e8d4;
+    --paper-deep: #e8dec6;
+    --ink: #1a1815;
+    --ink-soft: #3a342c;
+    --muted: #8a7f6b;
+    --rule: #c9bea3;
+    --stamp: #c4351c;
+    --stamp-deep: #9a2814;
+    --moss: #3d5a3d;
+    --teal: #1e4f4a;
+    --ochre: #b8862a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Newsreader', Georgia, serif;
+    background: var(--paper);
+    color: var(--ink);
+    font-size: 17px;
+    line-height: 1.6;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* paper grain texture */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 100;
+    opacity: 0.5;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.1 0 0 0 0 0.09 0 0 0 0 0.07 0 0 0 0.08 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* margin notes */
+  .container {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 0 48px;
+    position: relative;
+  }
+
+  /* ───── HEADER ───── */
+  header {
+    padding: 48px 0 24px;
+    border-bottom: 1px solid var(--rule);
+    position: relative;
+  }
+
+  .masthead {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--ink-soft);
+    margin-bottom: 80px;
+  }
+
+  .masthead .vol::before { content: "❋ "; color: var(--stamp); }
+
+  .title-block {
+    position: relative;
+    padding: 40px 0 60px;
+  }
+
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-variation-settings: "opsz" 144, "SOFT" 100, "WONK" 1;
+    font-weight: 360;
+    font-size: clamp(64px, 11vw, 168px);
+    line-height: 0.88;
+    letter-spacing: -0.04em;
+    color: var(--ink);
+  }
+
+  h1 .ital {
+    font-style: italic;
+    font-variation-settings: "opsz" 144, "SOFT" 100, "WONK" 1;
+    font-weight: 300;
+    color: var(--stamp);
+  }
+
+  h1 .amp {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 200;
+    font-variation-settings: "opsz" 144, "WONK" 1;
+    font-size: 0.7em;
+    color: var(--ochre);
+    padding: 0 0.05em;
+  }
+
+  .subtitle {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-top: 32px;
+    display: flex;
+    gap: 24px;
+    align-items: center;
+  }
+
+  .subtitle::before, .subtitle::after {
+    content: "";
+    height: 1px;
+    background: var(--rule);
+    flex: 1;
+    max-width: 80px;
+  }
+
+  /* decorative stamp */
+  .stamp {
+    position: absolute;
+    top: 60px;
+    right: 0;
+    width: 140px;
+    height: 140px;
+    border: 2px solid var(--stamp);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: rotate(-12deg);
+    opacity: 0.85;
+    color: var(--stamp);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    text-align: center;
+    line-height: 1.4;
+    padding: 12px;
+  }
+
+  .stamp::before {
+    content: "";
+    position: absolute;
+    inset: 6px;
+    border: 1px dashed var(--stamp);
+    border-radius: 50%;
+  }
+
+  .stamp-symbol {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 38px;
+    display: block;
+    margin: 4px 0;
+    font-weight: 400;
+  }
+
+  /* ───── INTRO ───── */
+  .intro {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 80px;
+    padding: 60px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .intro-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding-top: 6px;
+  }
+
+  .intro-text {
+    font-family: 'Newsreader', serif;
+    font-size: 22px;
+    line-height: 1.45;
+    font-weight: 300;
+    color: var(--ink);
+  }
+
+  .intro-text em {
+    font-style: italic;
+    color: var(--stamp);
+  }
+
+  .intro-text code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78em;
+    background: var(--paper-deep);
+    padding: 2px 8px;
+    border-radius: 3px;
+    border: 1px solid var(--rule);
+  }
+
+  /* ───── TABLE OF CONTENTS ───── */
+  .toc {
+    padding: 48px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .toc-title {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: 32px;
+    margin-bottom: 32px;
+    color: var(--ink);
+  }
+
+  .toc-list {
+    list-style: none;
+    columns: 2;
+    column-gap: 80px;
+  }
+
+  .toc-list li {
+    display: flex;
+    align-items: baseline;
+    padding: 8px 0;
+    border-bottom: 1px dotted var(--rule);
+    break-inside: avoid;
+  }
+
+  .toc-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    margin-right: 16px;
+    letter-spacing: 0.1em;
+  }
+
+  .toc-list a {
+    color: var(--ink);
+    text-decoration: none;
+    font-family: 'Newsreader', serif;
+    font-size: 18px;
+    flex: 1;
+    transition: color 0.2s;
+  }
+
+  .toc-list a:hover { color: var(--stamp); font-style: italic; }
+
+  .toc-dots {
+    flex: 1;
+    border-bottom: 1px dotted var(--rule);
+    margin: 0 12px;
+    transform: translateY(-4px);
+  }
+
+  .toc-page {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  /* ───── SECTIONS ───── */
+  section.chapter {
+    padding: 80px 0 48px;
+    border-bottom: 1px solid var(--rule);
+    position: relative;
+  }
+
+  .chapter-header {
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    gap: 40px;
+    margin-bottom: 56px;
+    align-items: start;
+  }
+
+  .chapter-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+    padding-top: 16px;
+    text-transform: uppercase;
+  }
+
+  .chapter-title {
+    font-family: 'Fraunces', serif;
+    font-variation-settings: "opsz" 96, "WONK" 1;
+    font-weight: 380;
+    font-size: 64px;
+    line-height: 1;
+    letter-spacing: -0.025em;
+    color: var(--ink);
+  }
+
+  .chapter-title em {
+    font-style: italic;
+    font-weight: 300;
+    color: var(--stamp);
+  }
+
+  .chapter-lede {
+    font-family: 'Newsreader', serif;
+    font-size: 19px;
+    line-height: 1.5;
+    color: var(--ink-soft);
+    margin-top: 16px;
+    max-width: 720px;
+  }
+
+  /* ───── REFERENCE TABLE ───── */
+  .ref-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0;
+    border-top: 2px solid var(--ink);
+  }
+
+  @media (max-width: 880px) {
+    .ref-grid { grid-template-columns: 1fr; }
+  }
+
+  .ref {
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    gap: 24px;
+    padding: 22px 24px;
+    border-bottom: 1px solid var(--rule);
+    align-items: start;
+    transition: background 0.15s;
+    position: relative;
+  }
+
+  .ref:nth-child(odd) {
+    border-right: 1px solid var(--rule);
+  }
+
+  @media (max-width: 880px) {
+    .ref:nth-child(odd) { border-right: none; }
+  }
+
+  .ref:hover {
+    background: var(--paper-deep);
+  }
+
+  .ref:hover .sym {
+    color: var(--stamp);
+  }
+
+  .sym {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1.1;
+    padding-top: 4px;
+    transition: color 0.15s;
+    word-break: break-word;
+  }
+
+  .ref-body { min-width: 0; }
+
+  .ref-name {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 17px;
+    color: var(--ink);
+    margin-bottom: 4px;
+    letter-spacing: -0.005em;
+  }
+
+  .ref-desc {
+    font-family: 'Newsreader', serif;
+    font-size: 15px;
+    line-height: 1.45;
+    color: var(--ink-soft);
+    margin-bottom: 8px;
+  }
+
+  .ref-ex {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    color: var(--muted);
+    line-height: 1.5;
+    display: block;
+  }
+
+  .ref-ex .label {
+    color: var(--moss);
+    font-style: italic;
+    font-family: 'Newsreader', serif;
+    font-size: 13px;
+    margin-right: 6px;
+  }
+
+  .ref-ex .match {
+    background: rgba(196, 53, 28, 0.12);
+    color: var(--stamp-deep);
+    padding: 1px 3px;
+    border-radius: 2px;
+  }
+
+  /* ───── RECIPES ───── */
+  .recipe-list {
+    display: grid;
+    gap: 0;
+    border-top: 2px solid var(--ink);
+  }
+
+  .recipe {
+    padding: 28px 0;
+    border-bottom: 1px solid var(--rule);
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 48px;
+    align-items: start;
+  }
+
+  @media (max-width: 700px) {
+    .recipe { grid-template-columns: 1fr; gap: 16px; }
+  }
+
+  .recipe-name {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: 22px;
+    color: var(--ink);
+  }
+
+  .recipe-name .roman {
+    font-family: 'JetBrains Mono', monospace;
+    font-style: normal;
+    font-size: 11px;
+    color: var(--muted);
+    display: block;
+    margin-bottom: 4px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  .recipe-pattern {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    background: var(--ink);
+    color: var(--paper);
+    padding: 16px 20px;
+    border-radius: 2px;
+    overflow-x: auto;
+    white-space: pre;
+    line-height: 1.6;
+    position: relative;
+  }
+
+  .recipe-pattern::before {
+    content: attr(data-flag);
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    font-size: 9px;
+    color: var(--ochre);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    opacity: 0.7;
+  }
+
+  /* syntax-ish highlighting via spans */
+  .recipe-pattern .anc { color: #e8b04a; }
+  .recipe-pattern .cls { color: #7fb685; }
+  .recipe-pattern .qnt { color: #d9826a; }
+  .recipe-pattern .grp { color: #a8b9d4; }
+  .recipe-pattern .esc { color: #c9a3d4; }
+
+  /* ───── TESTER ───── */
+  .tester-section {
+    padding: 100px 0 80px;
+    background: var(--ink);
+    color: var(--paper);
+    margin: 0 -100vw;
+    padding-left: calc(100vw);
+    padding-right: calc(100vw);
+    position: relative;
+  }
+
+  .tester-section .container {
+    padding: 0 48px;
+  }
+
+  .tester-section .chapter-num { color: var(--ochre); }
+  .tester-section .chapter-title { color: var(--paper); }
+  .tester-section .chapter-title em { color: var(--ochre); }
+  .tester-section .chapter-lede { color: rgba(241, 232, 212, 0.7); }
+
+  .tester {
+    margin-top: 40px;
+    display: grid;
+    gap: 24px;
+  }
+
+  .tester-row {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    gap: 20px;
+    align-items: start;
+  }
+
+  .tester-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ochre);
+    padding-top: 14px;
+  }
+
+  .pattern-input {
+    display: flex;
+    align-items: center;
+    background: rgba(241, 232, 212, 0.05);
+    border: 1px solid rgba(241, 232, 212, 0.2);
+    border-radius: 2px;
+    transition: border-color 0.2s;
+  }
+
+  .pattern-input:focus-within {
+    border-color: var(--ochre);
+  }
+
+  .pattern-input.error {
+    border-color: var(--stamp);
+  }
+
+  .slash {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 20px;
+    color: var(--ochre);
+    padding: 0 14px;
+    user-select: none;
+  }
+
+  #pattern, #flags {
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--paper);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 16px;
+    padding: 14px 0;
+    width: 100%;
+  }
+
+  #flags {
+    max-width: 80px;
+    color: var(--ochre);
+  }
+
+  #test-text {
+    width: 100%;
+    min-height: 140px;
+    background: rgba(241, 232, 212, 0.05);
+    border: 1px solid rgba(241, 232, 212, 0.2);
+    color: var(--paper);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 15px;
+    line-height: 1.6;
+    padding: 16px;
+    resize: vertical;
+    outline: none;
+    border-radius: 2px;
+    transition: border-color 0.2s;
+  }
+
+  #test-text:focus { border-color: var(--ochre); }
+
+  .results {
+    background: rgba(241, 232, 212, 0.04);
+    border-left: 2px solid var(--ochre);
+    padding: 16px 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    line-height: 1.7;
+    min-height: 80px;
+  }
+
+  .highlight-output {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14.5px;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .highlight-output mark {
+    background: var(--ochre);
+    color: var(--ink);
+    padding: 1px 2px;
+    border-radius: 2px;
+    font-weight: 500;
+  }
+
+  .count {
+    color: var(--ochre);
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    display: block;
+  }
+
+  .error-msg {
+    color: #f0a090;
+    font-style: italic;
+  }
+
+  /* ───── FOOTER ───── */
+  footer {
+    padding: 80px 0 60px;
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+  }
+
+  footer .ornament {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 32px;
+    color: var(--stamp);
+    margin-bottom: 24px;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+
+  /* responsive */
+  @media (max-width: 780px) {
+    .container { padding: 0 24px; }
+    .intro { grid-template-columns: 1fr; gap: 24px; }
+    .chapter-header { grid-template-columns: 1fr; gap: 12px; }
+    .chapter-title { font-size: 44px; }
+    .toc-list { columns: 1; }
+    .stamp { width: 90px; height: 90px; top: 40px; }
+    .stamp-symbol { font-size: 24px; }
+    .tester-section { padding-left: 24px; padding-right: 24px; margin: 0 -24px; }
+    .tester-section .container { padding: 0; }
+    .tester-row { grid-template-columns: 1fr; gap: 8px; }
+    .tester-label { padding-top: 0; }
+  }
+
+  /* fade-in on load */
+  .fade-up {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: rise 0.8s ease-out forwards;
+  }
+  @keyframes rise {
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .d1 { animation-delay: 0.1s; }
+  .d2 { animation-delay: 0.25s; }
+  .d3 { animation-delay: 0.4s; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- ═══ HEADER ═══ -->
+  <header>
+    <div class="masthead">
+      <span class="vol">Vol. I · A Field Guide</span>
+      <span>For the working programmer</span>
+      <span>Edition MMXXVI</span>
+    </div>
+
+    <div class="title-block">
+      <h1 class="fade-up">
+        The <span class="ital">Regex</span><br>
+        Cheat<span class="amp">·</span>sheet
+      </h1>
+      <p class="subtitle fade-up d1"><span>Patterns, Anchors &amp; Escapes — at a glance</span></p>
+
+      <div class="stamp fade-up d2">
+        <div>
+          Verified<br>
+          <span class="stamp-symbol">/.*?/</span>
+          Pattern · Match
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ═══ INTRO ═══ -->
+  <section class="intro">
+    <div class="intro-label">§ Prefatory<br>Note</div>
+    <p class="intro-text fade-up d3">
+      A regular expression is a <em>tiny language</em> for describing the shape of text. This sheet collects the
+      pieces you will reach for most often — what to match, how much of it, and where. Examples assume
+      the common <code>/pattern/flags</code> notation; small dialect differences exist between engines.
+    </p>
+  </section>
+
+  <!-- ═══ TOC ═══ -->
+  <section class="toc">
+    <h2 class="toc-title">Contents</h2>
+    <ul class="toc-list">
+      <li><span class="toc-num">I</span><a href="#chars">Character Classes</a><span class="toc-dots"></span><span class="toc-page">§ 01</span></li>
+      <li><span class="toc-num">II</span><a href="#quant">Quantifiers</a><span class="toc-dots"></span><span class="toc-page">§ 02</span></li>
+      <li><span class="toc-num">III</span><a href="#anch">Anchors &amp; Boundaries</a><span class="toc-dots"></span><span class="toc-page">§ 03</span></li>
+      <li><span class="toc-num">IV</span><a href="#grp">Groups &amp; Alternation</a><span class="toc-dots"></span><span class="toc-page">§ 04</span></li>
+      <li><span class="toc-num">V</span><a href="#esc">Escapes</a><span class="toc-dots"></span><span class="toc-page">§ 05</span></li>
+      <li><span class="toc-num">VI</span><a href="#flag">Flags</a><span class="toc-dots"></span><span class="toc-page">§ 06</span></li>
+      <li><span class="toc-num">VII</span><a href="#look">Lookarounds</a><span class="toc-dots"></span><span class="toc-page">§ 07</span></li>
+      <li><span class="toc-num">VIII</span><a href="#rec">Common Recipes</a><span class="toc-dots"></span><span class="toc-page">§ 08</span></li>
+      <li><span class="toc-num">IX</span><a href="#test">The Laboratory</a><span class="toc-dots"></span><span class="toc-page">§ 09</span></li>
+    </ul>
+  </section>
+
+  <!-- ═══ CHAPTER I — CHARACTER CLASSES ═══ -->
+  <section class="chapter" id="chars">
+    <div class="chapter-header">
+      <div class="chapter-num">§ 01 · Chapter I</div>
+      <div>
+        <h2 class="chapter-title">Character <em>Classes</em></h2>
+        <p class="chapter-lede">What kind of character to match. The vocabulary of single positions.</p>
+      </div>
+    </div>
+
+    <div class="ref-grid">
+      <div class="ref">
+        <div class="sym">.</div>
+        <div class="ref-body">
+          <div class="ref-name">Any character</div>
+          <div class="ref-desc">Matches any single character except a newline (unless the <code>s</code> flag is set).</div>
+          <span class="ref-ex"><span class="label">ex</span>c.t  →  <span class="match">cat</span>, <span class="match">cot</span>, <span class="match">c7t</span></span>
+        </div>
+      </div>
+
+      <div class="ref">
+        <div class="sym">\d</div>
+        <div class="ref-body">
+          <div class="ref-name">Digit</div>
+          <div class="ref-desc">A single digit, equivalent to <code>[0-9]</code>.</div>
+          <span class="ref-ex"><span class="label">ex</span>\d\d  →  age <span class="match">42</span></span>
+        </div>
+      </div>
+
+      <div class="ref">
+        <div class="sym">\D</div>
+        <div class="ref-body">
+          <div class="ref-name">Non-digit</div>
+          <div class="ref-desc">Any character that is not a digit.</div>
+          <span class="ref-ex"><span class="label">ex</span>\D+  →  <span class="match">price: $</span>42</span>
+        </div>
+      </div>
+
+      <div class="ref">
+        <div class="sym">\w</div>
+        <div class="ref-body">
+          <div class="ref-name">Word character</div>
+          <div class="ref-desc">A letter, digit, or underscore — equivalent to <code>[A-Za-z0-9_]</code>.</div>
+          <span class="ref-ex"><span class="label">ex</span>\w+  →  <span class="match">hello_world</span></span>
+        </div>
+      </div>
+
+      <div class="ref">
+        <div class="sym">\W</div>
+        <div class="ref-body">
+          <div class="ref-name">Non-word character</div>
+          <div class="ref-desc">Anything other than a letter, digit, or underscore.</div>
+          <span class="ref-ex"><span class="label">ex</span>\W  →  hi<span class="match">!</span></span>
+        </div>
+      </div>
+
+      <div class="ref">
+        <div class="sym">\s</div>
+        <div class="ref-body">
+          <div class="ref-name">Whitespace</div>
+          <div class="ref-desc">A space, tab, newline, or other whitespace character.</div>
+          <span class="ref-ex"><span class="label">ex</span>a\sb  →  a<span class="match"> </span>b</span>
+        </div>
+      </div>
+
+      <div class="ref">
+        <div class="sym">\S</div>
+        <div class="ref-body">
+          <div class="ref-name">Non-whitespace</div>
+          <div class="ref-desc">Any character that isn't whitespace.</div>
+          <span class="ref-ex"><span class="label">ex</span>\S+  →  <span class="match">hello</span> world</span>
+        </div>
+      </div>
+
+      <div class="ref">
+        <div class="sym">[abc]</div>
+        <div class="ref-body">
+          <div class="ref-name">Character set</div>
+          <div class="ref-desc">Any one of the listed characters.</div>
+          <span class="ref-ex"><span class="label">ex</span>[aeiou]  →  c<span class="match">a</span>t</span>
+        </div>
+      </div>
+
+      <div class="ref">
+        <div class="sym">[^abc]</div>
+        <div class="ref-body">
+          <div class="ref-name">Negated set</div>
+          <div class="ref-desc">Any character not in the list. The <code>^</code> inverts the class.</div>
+          <span class="ref-ex"><span class="label">ex</span>[^0-9]  →  abc<span class="match">!</span></span>
+        </div>
+      </div>
+
+      <div class="ref">
+        <div class="sym">[a-z]</div>
+        <div class="ref-body">
+          <div class="ref-name">Character range</div>
+          <div class="ref-desc">A range of characters by code point. Combine ranges freely.</div>
+          <span class="ref-ex"><span class="label">ex</span>[A-Za-z0-9]  →  <span class="match">Hello42</span></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ CHAPTER II — QUANTIFIERS ═══ -->
+  <section class="chapter" id="quant">
+    <div class="chapter-header">
+      <div class="chapter-num">§ 02 · Chapter II</div>
+      <div>
+        <h2 class="chapter-title"><em>Quantifiers</em></h2>
+        <p class="chapter-lede">How many times the preceding piece should occur. Greedy by default; add <code>?</code> to make them lazy.</p>
+      </div>
+    </div>
+
+    <div class="ref-grid">
+      <div class="ref">
+        <div class="sym">*</div>
+        <div class="ref-body">
+          <div class="ref-name">Zero or more</div>
+          <div class="ref-desc">Matches the previous item any number of times, including none.</div>
+          <span class="ref-ex"><span class="label">ex</span>ab*  →  <span class="match">a</span>, <span class="match">ab</span>, <span class="match">abbbb</span></span>
+        </div>
+      </div>
+
+      <div class="ref">
+        <div class="sym">+</div>
+        <div class="ref-body">
+          <div class="ref-name">One or more</div>
+          <div class="ref-desc">Matches the previous item at least once.</div>
+          <span class="ref-ex"><span class="label">ex</span>\d+  →  page <span class="match">42</span></span>
+        </div>
+      </div>
+
+      <div class="ref">
+        <div class="sym">?</div>
+        <div class="ref-body">
+          <div class="ref-name">Optional</div>
+          <div class="ref-desc">Zero or one — makes the preceding piece optional.</div>
+          <span class="ref-ex"><span class="label">ex</span>colou?r  →  <span class="match">color</span>, <span class="match">colour</span></span>
+        </div>
+      </div>
+
+      <div class="ref">
+        <div class="sym">{n}</div>
+        <div class="ref-body">
+          <div class="ref-name">Exactly n</div>
+          <div class="ref-desc">Exactly n occurrences of the preceding item.</div>
+          <span class="ref-ex"><span class="label">ex</span>\d{4}  →  year <span class="match">2026</span></span>
+        </div>
+      </div>
+
+      <div class="ref">
+        <div class="sym">{n,}</div>
+        <div class="ref-body">
+          <div class="ref-name">At least n</div>
+          <div class="ref-desc">n or more occurrences.</div>
+          <span class="ref-ex"><span class="label">ex</span>\d{3,}  →  <span class="match">12345</span></span>
+        </div>
+      </div>
+
+      <div class="ref">
+        <div class="sym">{n,m}</div>
+        <div class="ref-body">
+          <div class="ref-name">Between n and m</div>
+          <div class="ref-desc">A range of repetitions, inclusive on both ends.</div>
+          <span class="ref-ex"><span class="label">ex</span>\d{2,4}  →  <span class="match">42</span>, <span class="match">2026</span></span>
+        </div>
+      </div>
+
+      <div class="ref">
+        <div class="sym">*?  +?</div>
+        <div class="ref-body">
+          <div class="ref-name">Lazy (non-greedy)</div>
+          <div class="ref-desc">Adding <code>?</code> to a quantifier makes it match as little as possible.</div>
+          <span class="ref-ex"><span class="label">ex</span>&lt;.*?&gt;  →  <span class="match">&lt;b&gt;</span>hi<span class="match">&lt;/b&gt;</span></span>
+        </div>
+      </div>
+
+      <div class="ref">
+        <div class="sym">*+  ++</div>
+        <div class="ref-body">
+          <div class="ref-name">Possessive</div>
+          <div class="ref-desc">Matches greedily and never backtracks. Not supported in all engines (e.g. JavaScript).</div>
+          <span class="ref-ex"><span class="label">ex</span>\d++  →  matches digits, won't release</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ CHAPTER III — ANCHORS ═══ -->
+  <section class="chapter" id="anch">
+    <div class="chapter-header">
+      <div class="chapter-num">§ 03 · Chapter III</div>
+      <div>
+        <h2 class="chapter-title">Anchors &amp; <em>Boundaries</em></h2>
+        <p class="chapter-lede">Anchors match positions, not characters. They specify <em>where</em> in the string a match must occur.</p>
+      </div>
+    </div>
+
+    <div class="ref-grid">
+      <div class="ref">
+        <div class="sym">^</div>
+        <div class="ref-body">
+          <div class="ref-name">Start of string</div>
+          <div class="ref-desc">Matches the beginning of the input. With the <code>m</code> flag, matches the start of each line.</div>
+          <span class="ref-ex"><span class="label">ex</span>^Hello  →  <span class="match">Hello</span> world</span>
+        </div>
+      </div>
+
+      <div class="ref">
+        <div class="sym">$</div>
+        <div class="ref-body">
+          <div class="ref-name">End of string</div>
+          <div class="ref-desc">Matches the end of the input (or end of each line with <code>m</code>).</div>
+          <span class="ref-ex"><span class="label">ex</span>end$  →  the <span class="match">end</span></span>
+        </div>
+      </div>
+
+      <div class="ref">
+        <div class="sym">\b</div>
+        <div class="ref-body">
+          <div class="ref-name">Word boundary</div>
+          <div class="ref-desc">Position between a word character and a non-word character. No characters consumed.</div>
+          <span class="ref-ex"><span class="label">ex</span>\bcat\b  →  <span class="match">cat</span>, not category</span>
+        </div>
+      </div>
+
+      <div class="ref">
+        <div class="sym">\B</div>
+        <div class="ref-body">
+          <div class="ref-name">Not a word boundary</div>
+          <div class="ref-desc">The opposite of <code>\b</code> — inside a word, or between two non-word characters.</div>
+          <span class="ref-ex"><span class="label">ex</span>\Bcat  →  con<span class="match">cat</span>enate</span>
+        </div>
+      </div>
+
+      <div class="ref">
+        <div class="sym">\A</div>
+        <div class="ref-body">
+          <div class="ref-name">Absolute start</div>
+          <div class="ref-desc">Start of input only — never affected by the <code>m</code> flag. Not in JavaScript.</div>
+          <span class="ref-ex"><span class="label">ex</span>\Aabc  →  <span class="match">abc</span>def</span>
+        </div>
+      </div>
+
+      <div class="ref">
+        <div class="sym">\z</div>
+        <div class="ref-body">
+          <div class="ref-name">Absolute end</div>
+          <div class="ref-desc">End of input only. Many engines also accept <code>\Z</code> (end, but allows trailing newline).</div>
+          <span class="ref-ex"><span class="label">ex</span>end\z  →  the <span class="match">end</span></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ CHAPTER IV — GROUPS ═══ -->
+  <section class="chapter" id="grp">
+    <div class="chapter-header">
+      <div class="chapter-num">§ 04 · Chapter IV</div>
+      <div>
+        <h2 class="chapter-title">Groups &amp; <em>Alternation</em></h2>
+        <p class="chapter-lede">Group pieces, choose between alternatives, and refer back to captured text.</p>
+      </div>
+    </div>
+
+    <div class="ref-grid">
+      <div class="ref">
+        <div class="sym">(abc)</div>
+        <div class="ref-body">
+          <div class="ref-name">Capturing group</div>
+          <div class="ref-desc">Groups expressions and saves the matched text for later reference.</div>
+          <span class="ref-ex"><span class="label">ex</span>(\d{3})-\d{4}  →  <span class="match">555</span>-1234</span>
+        </div>
+      </div>
+
+      <div class="ref">
+        <div class="sym">(?:abc)</div>
+        <div class="ref-body">
+          <div class="ref-name">Non-capturing group</div>
+          <div class="ref-desc">Groups without saving — useful when you only need structure, not the capture.</div>
+          <span class="ref-ex"><span class="label">ex</span>(?:ab)+  →  <span class="match">ababab</span></span>
+        </div>
+      </div>
+
+      <div class="ref">
+        <div class="sym">a|b</div>
+        <div class="ref-body">
+          <div class="ref-name">Alternation</div>
+          <div class="ref-desc">Match either the left or right alternative. Lowest precedence — usually wrapped in a group.</div>
+          <span class="ref-ex"><span class="label">ex</span>cat|dog  →  <span class="match">cat</span>, <span class="match">dog</span></span>
+        </div>
+      </div>
+
+      <div class="ref">
+        <div class="sym">(?&lt;n&gt;..)</div>
+        <div class="ref-body">
+          <div class="ref-name">Named group</div>
+          <div class="ref-desc">Capture under a name, accessed via <code>match.groups.n</code> or similar.</div>
+          <span class="ref-ex"><span class="label">ex</span>(?&lt;year&gt;\d{4})  →  <span class="match">2026</span></span>
+        </div>
+      </div>
+
+      <div class="ref">
+        <div class="sym">\1  \2</div>
+        <div class="ref-body">
+          <div class="ref-name">Backreference</div>
+          <div class="ref-desc">Reuses the text matched by an earlier capturing group, by number.</div>
+          <span class="ref-ex"><span class="label">ex</span>(\w+) \1  →  <span class="match">the the</span></span>
+        </div>
+      </div>
+
+      <div class="ref">
+        <div class="sym">\k&lt;n&gt;</div>
+        <div class="ref-body">
+          <div class="ref-name">Named backreference</div>
+          <div class="ref-desc">Reuses a named capture by name rather than position.</div>
+          <span class="ref-ex"><span class="label">ex</span>(?&lt;c&gt;\w)\k&lt;c&gt;  →  <span class="match">ll</span> in hello</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ CHAPTER V — ESCAPES ═══ -->
+  <section class="chapter" id="esc">
+    <div class="chapter-header">
+      <div class="chapter-num">§ 05 · Chapter V</div>
+      <div>
+        <h2 class="chapter-title"><em>Escape</em> Sequences</h2>
+        <p class="chapter-lede">The backslash has two jobs: <em>strip</em> special meaning from metacharacters, and <em>grant</em> it to ordinary letters.</p>
+      </div>
+    </div>
+
+    <div class="ref-grid">
+      <div class="ref">
+        <div class="sym">\.</div>
+        <div class="ref-body">
+          <div class="ref-name">Literal period</div>
+          <div class="ref-desc">A real <code>.</code> rather than the "any character" metacharacter.</div>
+          <span class="ref-ex"><span class="label">ex</span>\d+\.\d+  →  <span class="match">3.14</span></span>
+        </div>
+      </div>
+
+      <div class="ref">
+        <div class="sym">\\</div>
+        <div class="ref-body">
+          <div class="ref-name">Literal backslash</div>
+          <div class="ref-desc">A single backslash character in the input.</div>
+          <span class="ref-ex"><span class="label">ex</span>C:\\\\  →  C:<span class="match">\</span></span>
+        </div>
+      </div>
+
+      <div class="ref">
+        <div class="sym">\(  \)</div>
+        <div class="ref-body">
+          <div class="ref-name">Literal parens</div>
+          <div class="ref-desc">Match real parentheses instead of starting a group.</div>
+          <span class="ref-ex"><span class="label">ex</span>\(\d+\)  →  <span class="match">(42)</span></span>
+        </div>
+      </div>
+
+      <div class="ref">
+        <div class="sym">\[  \]</div>
+        <div class="ref-body">
+          <div class="ref-name">Literal brackets</div>
+          <div class="ref-desc">Match real square brackets.</div>
+          <span class="ref-ex"><span class="label">ex</span>\[\w+\]  →  <span class="match">[note]</span></span>
+        </div>
+      </div>
+
+      <div class="ref">
+        <div class="sym">\?  \*  \+</div>
+        <div class="ref-body">
+          <div class="ref-name">Literal quantifiers</div>
+          <div class="ref-desc">Escape these to match them as ordinary punctuation.</div>
+          <span class="ref-ex"><span class="label">ex</span>are\?  →  <span class="match">are?</span></span>
+        </div>
+      </div>
+
+      <div class="ref">
+        <div class="sym">\|</div>
+        <div class="ref-body">
+          <div class="ref-name">Literal pipe</div>
+          <div class="ref-desc">A vertical bar character, not alternation.</div>
+          <span class="ref-ex"><span class="label">ex</span>a\|b  →  <span class="match">a|b</span></span>
+        </div>
+      </div>
+
+      <div class="ref">
+        <div class="sym">\n</div>
+        <div class="ref-body">
+          <div class="ref-name">Newline</div>
+          <div class="ref-desc">Line-feed character (ASCII 10).</div>
+          <span class="ref-ex"><span class="label">ex</span>line\nline  →  multi-line break</span>
+        </div>
+      </div>
+
+      <div class="ref">
+        <div class="sym">\t</div>
+        <div class="ref-body">
+          <div class="ref-name">Tab</div>
+          <div class="ref-desc">Horizontal tab character (ASCII 9).</div>
+          <span class="ref-ex"><span class="label">ex</span>a\tb  →  a→b</span>
+        </div>
+      </div>
+
+      <div class="ref">
+        <div class="sym">\r</div>
+        <div class="ref-body">
+          <div class="ref-name">Carriage return</div>
+          <div class="ref-desc">ASCII 13. Often paired with <code>\n</code> on Windows line endings.</div>
+          <span class="ref-ex"><span class="label">ex</span>\r\n  →  Windows EOL</span>
+        </div>
+      </div>
+
+      <div class="ref">
+        <div class="sym">\xFF</div>
+        <div class="ref-body">
+          <div class="ref-name">Hex code</div>
+          <div class="ref-desc">A character given by a two-digit hexadecimal value.</div>
+          <span class="ref-ex"><span class="label">ex</span>\x41  →  <span class="match">A</span></span>
+        </div>
+      </div>
+
+      <div class="ref">
+        <div class="sym">\uFFFF</div>
+        <div class="ref-body">
+          <div class="ref-name">Unicode code point</div>
+          <div class="ref-desc">A Unicode character given by a four-digit hex code.</div>
+          <span class="ref-ex"><span class="label">ex</span>\u00e9  →  <span class="match">é</span></span>
+        </div>
+      </div>
+
+      <div class="ref">
+        <div class="sym">\0</div>
+        <div class="ref-body">
+          <div class="ref-name">Null character</div>
+          <div class="ref-desc">The null byte (ASCII 0).</div>
+          <span class="ref-ex"><span class="label">ex</span>rare outside binary contexts</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ CHAPTER VI — FLAGS ═══ -->
+  <section class="chapter" id="flag">
+    <div class="chapter-header">
+      <div class="chapter-num">§ 06 · Chapter VI</div>
+      <div>
+        <h2 class="chapter-title"><em>Flags</em></h2>
+        <p class="chapter-lede">Modifiers that change how the entire pattern is interpreted. Written after the closing slash.</p>
+      </div>
+    </div>
+
+    <div class="ref-grid">
+      <div class="ref">
+        <div class="sym">i</div>
+        <div class="ref-body">
+          <div class="ref-name">Case insensitive</div>
+          <div class="ref-desc">Treats upper and lower case as equivalent.</div>
+          <span class="ref-ex"><span class="label">ex</span>/hello/i  →  <span class="match">HELLO</span>, <span class="match">Hello</span></span>
+        </div>
+      </div>
+
+      <div class="ref">
+        <div class="sym">g</div>
+        <div class="ref-body">
+          <div class="ref-name">Global</div>
+          <div class="ref-desc">Find every match, not just the first.</div>
+          <span class="ref-ex"><span class="label">ex</span>/a/g  →  b<span class="match">a</span>n<span class="match">a</span>n<span class="match">a</span></span>
+        </div>
+      </div>
+
+      <div class="ref">
+        <div class="sym">m</div>
+        <div class="ref-body">
+          <div class="ref-name">Multiline</div>
+          <div class="ref-desc">Makes <code>^</code> and <code>$</code> match start and end of each line.</div>
+          <span class="ref-ex"><span class="label">ex</span>/^foo/m  →  line-by-line</span>
+        </div>
+      </div>
+
+      <div class="ref">
+        <div class="sym">s</div>
+        <div class="ref-body">
+          <div class="ref-name">Dotall</div>
+          <div class="ref-desc">Lets <code>.</code> match newlines too.</div>
+          <span class="ref-ex"><span class="label">ex</span>/a.b/s  →  a<span class="match">\n</span>b</span>
+        </div>
+      </div>
+
+      <div class="ref">
+        <div class="sym">u</div>
+        <div class="ref-body">
+          <div class="ref-name">Unicode</div>
+          <div class="ref-desc">Enables proper Unicode handling and <code>\p{...}</code> properties.</div>
+          <span class="ref-ex"><span class="label">ex</span>/\p&#123;Emoji&#125;/u  →  <span class="match">🙂</span></span>
+        </div>
+      </div>
+
+      <div class="ref">
+        <div class="sym">x</div>
+        <div class="ref-body">
+          <div class="ref-name">Extended (free-spacing)</div>
+          <div class="ref-desc">Ignores whitespace in the pattern, allowing comments. Not in JavaScript.</div>
+          <span class="ref-ex"><span class="label">ex</span>/\d+ # digits/x</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ CHAPTER VII — LOOKAROUNDS ═══ -->
+  <section class="chapter" id="look">
+    <div class="chapter-header">
+      <div class="chapter-num">§ 07 · Chapter VII</div>
+      <div>
+        <h2 class="chapter-title"><em>Lookarounds</em></h2>
+        <p class="chapter-lede">Zero-width assertions. They check what's beside the current position without consuming any characters.</p>
+      </div>
+    </div>
+
+    <div class="ref-grid">
+      <div class="ref">
+        <div class="sym">(?=..)</div>
+        <div class="ref-body">
+          <div class="ref-name">Positive lookahead</div>
+          <div class="ref-desc">The following text must match the inner pattern, but isn't part of the match.</div>
+          <span class="ref-ex"><span class="label">ex</span>\d+(?=px)  →  <span class="match">42</span>px</span>
+        </div>
+      </div>
+
+      <div class="ref">
+        <div class="sym">(?!..)</div>
+        <div class="ref-body">
+          <div class="ref-name">Negative lookahead</div>
+          <div class="ref-desc">The following text must <em>not</em> match.</div>
+          <span class="ref-ex"><span class="label">ex</span>\d+(?!px)  →  <span class="match">42</span>em</span>
+        </div>
+      </div>
+
+      <div class="ref">
+        <div class="sym">(?&lt;=..)</div>
+        <div class="ref-body">
+          <div class="ref-name">Positive lookbehind</div>
+          <div class="ref-desc">The preceding text must match the inner pattern.</div>
+          <span class="ref-ex"><span class="label">ex</span>(?&lt;=\$)\d+  →  $<span class="match">42</span></span>
+        </div>
+      </div>
+
+      <div class="ref">
+        <div class="sym">(?&lt;!..)</div>
+        <div class="ref-body">
+          <div class="ref-name">Negative lookbehind</div>
+          <div class="ref-desc">The preceding text must <em>not</em> match.</div>
+          <span class="ref-ex"><span class="label">ex</span>(?&lt;!\$)\d+  →  qty <span class="match">42</span></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ CHAPTER VIII — RECIPES ═══ -->
+  <section class="chapter" id="rec">
+    <div class="chapter-header">
+      <div class="chapter-num">§ 08 · Chapter VIII</div>
+      <div>
+        <h2 class="chapter-title">Common <em>Recipes</em></h2>
+        <p class="chapter-lede">Useful starting points. Tweak to taste — every dataset has its quirks.</p>
+      </div>
+    </div>
+
+    <div class="recipe-list">
+      <div class="recipe">
+        <div class="recipe-name">
+          <span class="roman">№ I</span>
+          Email address <span style="color: var(--muted); font-style: normal; font-size: 13px;">(simplified)</span>
+        </div>
+        <div class="recipe-pattern" data-flag="/i">/\<span class="anc">b</span>[\<span class="cls">w</span>.+-]<span class="qnt">+</span>@[\<span class="cls">w</span>-]<span class="qnt">+</span>\.[\<span class="cls">w</span>.-]<span class="qnt">+</span>\<span class="anc">b</span>/i</div>
+      </div>
+
+      <div class="recipe">
+        <div class="recipe-name">
+          <span class="roman">№ II</span>
+          URL
+        </div>
+        <div class="recipe-pattern" data-flag="/gi">/https?:\/\/[\<span class="cls">w</span>.-]<span class="qnt">+</span>(?:\/[\<span class="cls">w</span>./?&amp;=#%-]<span class="qnt">*</span>)?/gi</div>
+      </div>
+
+      <div class="recipe">
+        <div class="recipe-name">
+          <span class="roman">№ III</span>
+          Hex color code
+        </div>
+        <div class="recipe-pattern" data-flag="/i">/<span class="anc">^</span>#[0-9a-f]<span class="qnt">{3}</span>([0-9a-f]<span class="qnt">{3}</span>)?<span class="anc">$</span>/i</div>
+      </div>
+
+      <div class="recipe">
+        <div class="recipe-name">
+          <span class="roman">№ IV</span>
+          ISO date · YYYY-MM-DD
+        </div>
+        <div class="recipe-pattern" data-flag="">/\<span class="anc">b</span>\<span class="cls">d</span><span class="qnt">{4}</span>-\<span class="cls">d</span><span class="qnt">{2}</span>-\<span class="cls">d</span><span class="qnt">{2}</span>\<span class="anc">b</span>/</div>
+      </div>
+
+      <div class="recipe">
+        <div class="recipe-name">
+          <span class="roman">№ V</span>
+          24-hour time
+        </div>
+        <div class="recipe-pattern" data-flag="">/<span class="anc">^</span>(?:[01]\<span class="cls">d</span>|2[0-3]):[0-5]\<span class="cls">d</span><span class="anc">$</span>/</div>
+      </div>
+
+      <div class="recipe">
+        <div class="recipe-name">
+          <span class="roman">№ VI</span>
+          Phone · (555) 123-4567
+        </div>
+        <div class="recipe-pattern" data-flag="">/\<span class="esc">(</span>\<span class="cls">d</span><span class="qnt">{3}</span>\<span class="esc">)</span> \<span class="cls">d</span><span class="qnt">{3}</span>-\<span class="cls">d</span><span class="qnt">{4}</span>/</div>
+      </div>
+
+      <div class="recipe">
+        <div class="recipe-name">
+          <span class="roman">№ VII</span>
+          IPv4 address <span style="color: var(--muted); font-style: normal; font-size: 13px;">(loose)</span>
+        </div>
+        <div class="recipe-pattern" data-flag="">/\<span class="anc">b</span>\<span class="cls">d</span><span class="qnt">{1,3}</span>(?:\.\<span class="cls">d</span><span class="qnt">{1,3}</span>)<span class="qnt">{3}</span>\<span class="anc">b</span>/</div>
+      </div>
+
+      <div class="recipe">
+        <div class="recipe-name">
+          <span class="roman">№ VIII</span>
+          Duplicate words
+        </div>
+        <div class="recipe-pattern" data-flag="/gi">/\<span class="anc">b</span>(\<span class="cls">w</span><span class="qnt">+</span>)\<span class="cls">s</span><span class="qnt">+</span>\<span class="grp">1</span>\<span class="anc">b</span>/gi</div>
+      </div>
+
+      <div class="recipe">
+        <div class="recipe-name">
+          <span class="roman">№ IX</span>
+          Trim whitespace
+        </div>
+        <div class="recipe-pattern" data-flag="/g">/<span class="anc">^</span>\<span class="cls">s</span><span class="qnt">+</span>|\<span class="cls">s</span><span class="qnt">+</span><span class="anc">$</span>/g</div>
+      </div>
+
+      <div class="recipe">
+        <div class="recipe-name">
+          <span class="roman">№ X</span>
+          Markdown link
+        </div>
+        <div class="recipe-pattern" data-flag="/g">/\[([^\]]<span class="qnt">+</span>)\]\(([^)]<span class="qnt">+</span>)\)/g</div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- ═══ CHAPTER IX — TESTER ═══ -->
+<section class="tester-section" id="test">
+  <div class="container">
+    <div class="chapter-header">
+      <div class="chapter-num">§ 09 · Chapter IX</div>
+      <div>
+        <h2 class="chapter-title">The <em>Laboratory</em></h2>
+        <p class="chapter-lede">Try a pattern against text. Matches are highlighted in real time.</p>
+      </div>
+    </div>
+
+    <div class="tester">
+      <div class="tester-row">
+        <div class="tester-label">Pattern</div>
+        <div class="pattern-input" id="pattern-wrap">
+          <span class="slash">/</span>
+          <input type="text" id="pattern" value="\b\d+(st|nd|rd|th)\b" spellcheck="false" autocomplete="off">
+          <span class="slash">/</span>
+          <input type="text" id="flags" value="gi" spellcheck="false" autocomplete="off" maxlength="6">
+        </div>
+      </div>
+
+      <div class="tester-row">
+        <div class="tester-label">Subject</div>
+        <textarea id="test-text" spellcheck="false">On the 1st of May, the 21st annual festival opens its 3rd gate.
+The 10th anniversary issue is also out.
+Don't catch 101 Kleene St or 1starwarsmovie though.</textarea>
+      </div>
+
+      <div class="tester-row">
+        <div class="tester-label">Results</div>
+        <div class="results">
+          <span class="count" id="count">— matches</span>
+          <div class="highlight-output" id="output"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="container">
+  <footer>
+    <div class="ornament">/.*?/</div>
+    Compiled with care · Set in Fraunces, Newsreader &amp; JetBrains Mono
+  </footer>
+</div>
+
+<script>
+  const patternInput = document.getElementById('pattern');
+  const flagsInput = document.getElementById('flags');
+  const testText = document.getElementById('test-text');
+  const output = document.getElementById('output');
+  const count = document.getElementById('count');
+  const wrap = document.getElementById('pattern-wrap');
+
+  function escapeHtml(s) {
+    return s.replace(/[&<>"']/g, c => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[c]));
+  }
+
+  function run() {
+    const pattern = patternInput.value;
+    let flags = flagsInput.value;
+    const text = testText.value;
+    wrap.classList.remove('error');
+
+    if (!pattern) {
+      output.innerHTML = escapeHtml(text);
+      count.textContent = '— enter a pattern';
+      return;
+    }
+
+    // ensure global so we get all matches
+    if (!flags.includes('g')) flags = 'g' + flags;
+
+    let re;
+    try {
+      re = new RegExp(pattern, flags);
+    } catch (e) {
+      wrap.classList.add('error');
+      output.innerHTML = '<span class="error-msg">⚠ ' + escapeHtml(e.message) + '</span>';
+      count.textContent = '— invalid pattern';
+      return;
+    }
+
+    let result = '';
+    let lastIndex = 0;
+    let matchCount = 0;
+    let safety = 0;
+
+    let m;
+    while ((m = re.exec(text)) !== null) {
+      if (safety++ > 10000) break;
+      // avoid infinite loops on zero-width matches
+      if (m.index === re.lastIndex) {
+        re.lastIndex++;
+        continue;
+      }
+      result += escapeHtml(text.slice(lastIndex, m.index));
+      result += '<mark>' + escapeHtml(m[0]) + '</mark>';
+      lastIndex = m.index + m[0].length;
+      matchCount++;
+    }
+    result += escapeHtml(text.slice(lastIndex));
+
+    output.innerHTML = result || '<span style="color: rgba(241,232,212,0.4)">(empty)</span>';
+    count.textContent = matchCount + ' match' + (matchCount === 1 ? '' : 'es');
+  }
+
+  patternInput.addEventListener('input', run);
+  flagsInput.addEventListener('input', run);
+  testText.addEventListener('input', run);
+  run();
+</script>
+</body>
+</html>
